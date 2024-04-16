@@ -1,0 +1,103 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+struct Locuinta {
+	int id;
+	char* strada;
+	int numar;
+
+};
+void inserareLocuinta(struct Locuinta** vector, int* dim, struct Locuinta l) {
+	struct Locuinta* copie;
+	//+1 pt ca adaug o locuinta l
+	//++ ca sa ramana modificat "dim" ul si jos
+	copie = (struct Locuinta*)malloc(sizeof(struct Locuinta) *(++ (*dim)));
+	for (int i = 0; i < (*dim)-1; i++) {
+		copie[i] = (*vector)[i]; 
+	copie[(*dim) - 1] = l;
+	if ((*vector) != NULL) {
+		free((*vector));
+}
+	(*vector) = copie;
+
+}
+
+void citesteFisier(const char* numeFisier, struct Locuinta** vector, int* dim) {
+
+
+	if (numeFisier != NULL && strlen(numeFisier) > 0) {
+		FILE* f = fopen(numeFisier, "r");
+		if (f != NULL) {
+			(*dim) = 0;
+			while (!feof(f)) {
+				char buffer[100]; //linia din fisier
+				char delimitator[] = ",\n";
+				while (fgets(buffer, 100, f) != NULL) {
+					char* token;
+					token = strtok(buffer, delimitator); 
+     
+					struct Locuinta locuinta;
+					locuinta.id = atoi(token);  
+     
+					token = strtok(NULL, delimitator); 
+					locuinta.strada = (char*)malloc(strlen(token) + 1);
+					strcpy(locuinta.strada, token);
+     
+					token = strtok(NULL, delimitator);
+					locuinta.numar = atoi(token); 
+					inserareLocuinta(vector, dim, locuinta);
+
+				}
+			}
+			fclose(f);
+		}
+
+	}
+}
+void afisareLocuinte(struct Locuinta l) {
+	printf("Id-ul: %d\nStrada: %s numarul %d\n", l.id, l.strada, l.numar);
+
+}
+
+void afisareVector(struct Locuinta* vector, int dim) {
+	for (int i = 0; i < dim; i++) {
+		afisareLocuinte(vector[i]);
+	}
+}
+
+void stergeLocuinta(struct Locuinta** vector, int* dim, int id) {
+	char flag = 0;
+	for (int i = 0; i < (*dim); i++) {
+		if ((*vector)[i].id == id) {
+			flag = 1;
+			break;
+		}
+	}
+
+	if (flag == 1) {
+		struct Locuinta* copie = (struct Locuinta*)malloc(sizeof(struct Locuinta) * ((*dim) - 1));
+
+		int j = 0; 
+		for (int i = 0; i < (*dim); i++) {
+			if ((*vector)[i].id != id) {
+				copie[j++] = (*vector)[i];
+			}
+		}
+
+		(*dim)--;
+		free(*vector);
+		*vector = copie;
+	}
+}
+
+void main() {
+	struct Locuinta* vector = NULL;
+	int dim = 3;
+	citesteFisier("locuinte.txt", &vector, &dim);
+	printf("\n");
+	stergeLocuinta(&vector, &dim, 20);
+
+	afisareVector(vector, dim);
+
+}
